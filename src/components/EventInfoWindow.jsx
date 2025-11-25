@@ -2,8 +2,6 @@ import React from 'react';
 import { InfoBox } from '@react-google-maps/api';
 
 // --- スタイル定義 (CSS in JS) ---
-// (スタイル定義は関数の外でも問題ないため、変更なし)
-
 const infoBoxStyle = {
   position: 'relative',
   background: 'white',
@@ -11,8 +9,9 @@ const infoBoxStyle = {
   padding: '10px 15px 10px 15px',
   borderRadius: '8px',
   boxShadow: '0 2px 7px 1px rgba(0,0,0,0.3)',
-  width: 'auto',
-  minWidth: '150px'
+  minWidth: '150px',
+  width: '80vw', // 画面幅の80%を基準にする
+  maxWidth: '320px' // 横幅が320px以上には広がらないようにする
 };
 
 const closeButtonStyle = {
@@ -50,27 +49,33 @@ const paragraphStyle = {
   margin: '0 0 5px 0'
 };
 
-// --- InfoBox の設定オプション (ここから削除) ---
-
-
 /**
  * 選択されたイベントの情報を表示するウィンドウ (InfoBox版)
  */
 function EventInfoWindow({ selectedEvent, onCloseClick }) {
 
-  // selectedEvent が null なら何も表示しない
-  if (!selectedEvent) {
+  // selectedEvent が null または空の配列なら何も表示しない
+  if (!selectedEvent || selectedEvent.length === 0) {
     return null;
   }
+
+  // selectedEventが配列でない場合は配列に変換する（後方互換性のため）
+  const eventsToShow = Array.isArray(selectedEvent) ? selectedEvent : [selectedEvent];
+  const firstEvent = eventsToShow[0];
 
   // place (緯度経度) が不正なら表示しない
-  if (!selectedEvent.place || typeof selectedEvent.place.lat !== 'number' || typeof selectedEvent.place.lng !== 'number') {
+  // GeoPointオブジェクト (latitude, longitude) をチェックするように修正
+  if (!firstEvent.place || typeof firstEvent.place.latitude !== 'number' || typeof firstEvent.place.longitude !== 'number') {
     return null;
   }
 
-  // ★★★ 修正点 ★★★
+  // InfoBoxに渡すための position オブジェクトを作成
+  const position = {
+    lat: firstEvent.place.latitude,
+    lng: firstEvent.place.longitude,
+  };
+
   // InfoBox の設定オプションを、コンポーネント関数の「内部」に移動する
-  // (これにより、window.google.maps がロードされた後に実行される)
   const infoBoxOptions = {
     // マーカー位置からのオフセット (ピクセル)
     pixelOffset: new window.google.maps.Size(0, -45),
@@ -95,7 +100,7 @@ function EventInfoWindow({ selectedEvent, onCloseClick }) {
   return (
     <InfoBox
       // 表示する緯度・経度
-      position={selectedEvent.place}
+      position={position}
       // 上で定義した設定オプション
       options={infoBoxOptions}
     >
@@ -112,15 +117,18 @@ function EventInfoWindow({ selectedEvent, onCloseClick }) {
         </button>
         
         {/* 2. コンテンツ */}
-        <h3 style={headingStyle}>{selectedEvent.heading}</h3>
-        <p style={paragraphStyle}>{selectedEvent.date}</p>
-        
-        {selectedEvent.explaing && (
-          <p style={{...paragraphStyle, fontWeight: 'normal', paddingRight: '20px' }}>
-            {selectedEvent.explaing}
-          </p>
-        )}
-
+        {/* イベントの配列をループして表示 */}
+        {eventsToShow.map((event, index) => (
+          <div key={event.id} style={{ marginBottom: index === eventsToShow.length - 1 ? 0 : '10px' }}>
+            <h2 style={headingStyle}>{event.heading}</h2>
+            <h3 style={paragraphStyle}>{event.date}</h3>
+            {event.explaing && (
+              <p style={{...paragraphStyle, fontWeight: 'normal', paddingRight: '20px', whiteSpace: 'pre-line' }}>
+                {event.explaing}
+              </p>
+            )}
+          </div>
+        ))}
         {/* 3. 吹き出しの「しっぽ」 */}
         <div style={triangleStyle} />
 
