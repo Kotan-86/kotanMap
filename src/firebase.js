@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // .env.local から設定を読み込む
 const firebaseConfig = {
@@ -17,3 +18,6 @@ const app = initializeApp(firebaseConfig);
 // Firestore のデータベース参照を取得してエクスポート
 // これで他のファイルから db を使ってデータ操作ができる
 export const db = getFirestore(app);
+
+// Auth インスタンスをエクスポート
+export const auth = getAuth(app);

@@ -13,8 +13,8 @@ const containerStyle = {
   height: '100vh'
 };
 const center = {
-  lat: 35.6812,
-  lng: 139.7671
+  lat: 36.5,
+  lng: 138.0
 };
 const libraries = ["places"]; 
 
@@ -63,7 +63,7 @@ function MapComponent() {
   const handlePlaceSelected = useCallback((location) => {
     if (mapRef.current && location) {
       mapRef.current.panTo(location);
-      mapRef.current.setZoom(15);
+      mapRef.current.setZoom(10);
     }
   }, []);
 
@@ -86,7 +86,7 @@ function MapComponent() {
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
-        zoom={10}
+        zoom={5.3}
         onLoad={onMapLoad}
       >
         {/* 3. マーカーの一覧 */}
